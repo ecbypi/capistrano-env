@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Capistrano::Env::VERSION
   spec.authors       = ["Eduardo Gutierrez"]
   spec.email         = ["eduardo@vermonster.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
-  spec.homepage      = ""
+  spec.description   = %q{ Set and unset ENV variables in your .env file using S3 as a storage backend. }
+  spec.summary       = %q{ Capistrano tasks to manage and deploy .env files stored on S3. }
+  spec.homepage      = "https://github.com/ecbypi/capistrano-env"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
