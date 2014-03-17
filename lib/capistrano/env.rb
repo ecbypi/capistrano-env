@@ -75,7 +75,7 @@ variables:
       DOC
       task :export do
         object.write pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
-        put object.read, "#{latest_release}/.env", via: :scp
+        put object.read, "#{current_path}/.env", via: :scp
       end
 
       desc <<-DOC
