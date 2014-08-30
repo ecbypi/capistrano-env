@@ -49,7 +49,6 @@ variables:
     end
 
     namespace :env do
-
       desc <<-DOC
         Reads the .env file from S3.
       DOC
