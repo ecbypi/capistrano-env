@@ -49,6 +49,18 @@ variables:
     end
 
     namespace :env do
+      def env_variables
+        index = 1
+        stage_name = fetch(:stage, nil)
+        default_stage_name = fetch(:default_stage, nil)
+
+        if stage_name && default_stage_name && stage_name.to_s != default_stage_name.to_s
+          index = 2
+        end
+
+        ARGV[index..-1]
+      end
+
       desc <<-DOC
         Reads the .env file from S3.
       DOC
@@ -64,9 +76,7 @@ variables:
       task :set do
         pairs = fetch(:env_hash)
 
-        ARGV.shift
-
-        ARGV.map do |pair|
+        env_variables.map do |pair|
           key, value = pair.split('=', 2)
           pairs[key] = value
         end
@@ -94,8 +104,7 @@ variables:
       task :unset do
         pairs = fetch(:env_hash)
 
-        ARGV.shift
-        ARGV.each { |key| pairs.delete(key) }
+        env_variables.each { |key| pairs.delete(key) }
       end
     end
 
