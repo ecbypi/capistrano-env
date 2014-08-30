@@ -25,25 +25,26 @@ variables:
     end
 
     _cset :env_bucket do
-      bucket = s3.buckets[env_bucket_name]
-      bucket = s3.buckets.create(env_bucket_name) unless bucket.exists?
+      bucket_name = fetch(:env_bucket_name)
+
+      bucket = s3.buckets[bucket_name]
+      bucket = s3.buckets.create(bucket_name) unless bucket.exists?
       bucket
     end
 
     _cset :env_object_key do
-      if defined?(stage)
-        "#{application}-#{stage}"
-      else
-        application
-      end
+      stage_name = fetch(:stage, nil)
+      app_name = fetch(:application)
+
+      stage_name ? "#{app_name}-#{stage_name}" : app_name
     end
 
     _cset :env_object do
-      env_bucket.objects[env_object_key]
+      fetch(:env_bucket).objects[fetch(:env_object_key)]
     end
 
-    _cset :env_pairs do
-      content = env_object.read rescue ""
+    _cset :env_hash do
+      content = fetch(:env_object).read rescue ""
       Hash[content.split(/\n/).map { |line| line.split('=', 2) }]
     end
 
@@ -54,19 +55,21 @@ variables:
       DOC
       task :read do
         begin
-          $stdout.puts env_object.read
+          $stdout.puts fetch(:env_object).read
         rescue
-          $stdout.puts "the object #{env_object_key} in bucket #{env_bucket_name} does not exist, set some values first"
+          $stdout.puts "the object #{fetch(:env_object_key)} in bucket #{fetch(:env_bucket_name)} does not exist, set some values first"
         end
       end
 
       desc "Set a value"
       task :set do
+        pairs = fetch(:env_hash)
+
         ARGV.shift
 
         ARGV.map do |pair|
           key, value = pair.split('=', 2)
-          env_pairs[key] = value
+          pairs[key] = value
         end
       end
 
@@ -75,8 +78,13 @@ variables:
         scp.
       DOC
       task :export do
-        env_object.write env_pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
-        put env_object.read, "#{latest_release}/.env", via: :scp
+        pairs = fetch(:env_hash)
+        object = fetch(:env_object)
+
+        content = pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
+
+        object.write content
+        put content, "#{latest_release}/.env", via: :scp
       end
 
       desc <<-DOC
@@ -85,9 +93,10 @@ variables:
         the name of the environment variable(s) being unset.
       DOC
       task :unset do
-        ARGV.shift
+        pairs = fetch(:env_hash)
 
-        ARGV.each { |key| env_pairs.delete(key) }
+        ARGV.shift
+        ARGV.each { |key| pairs.delete(key) }
       end
     end
 
