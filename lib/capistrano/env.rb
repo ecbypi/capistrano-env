@@ -38,22 +38,23 @@ variables:
       end
     end
 
-    namespace :env do
-      _cset :object do
-        env_bucket.objects[env_object_key]
-      end
+    _cset :env_object do
+      env_bucket.objects[env_object_key]
+    end
 
-      _cset :pairs do
-        content = object.read rescue ""
-        Hash[content.split(/\n/).map { |line| line.split('=', 2) }]
-      end
+    _cset :env_pairs do
+      content = env_object.read rescue ""
+      Hash[content.split(/\n/).map { |line| line.split('=', 2) }]
+    end
+
+    namespace :env do
 
       desc <<-DOC
         Reads the .env file from S3.
       DOC
       task :read do
         begin
-          $stdout.puts object.read
+          $stdout.puts env_object.read
         rescue
           $stdout.puts "the object #{env_object_key} in bucket #{env_bucket_name} does not exist, set some values first"
         end
@@ -65,7 +66,7 @@ variables:
 
         ARGV.map do |pair|
           key, value = pair.split('=', 2)
-          pairs[key] = value
+          env_pairs[key] = value
         end
       end
 
@@ -74,8 +75,8 @@ variables:
         scp.
       DOC
       task :export do
-        object.write pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
-        put object.read, "#{latest_release}/.env", via: :scp
+        env_object.write env_pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
+        put env_object.read, "#{latest_release}/.env", via: :scp
       end
 
       desc <<-DOC
@@ -86,7 +87,7 @@ variables:
       task :unset do
         ARGV.shift
 
-        ARGV.each { |key| pairs.delete(key) }
+        ARGV.each { |key| env_pairs.delete(key) }
       end
     end
 
