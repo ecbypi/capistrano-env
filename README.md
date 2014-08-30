@@ -4,9 +4,10 @@ Manage a `.env` file stored on S3 for deployment with `capistrano`.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add this line to your application's Gemfile (there is another gem with the name
+`capistrano-env`):
 
-    gem 'capistrano-env'
+    gem 'capistrano-env', github: 'ecbypi/capistrano-env', tag: 'v0.2.0'
 
 And then execute:
 
