@@ -49,6 +49,13 @@ variables:
     end
 
     namespace :env do
+      def using_capistrano_multistage?
+        stage_name = fetch(:stage, nil)
+        default_stage_name = fetch(:default_stage, nil)
+
+        stage_name && default_stage_name && stage_name.to_s != default_stage_name.to_s
+      end
+
       desc <<-DOC
         Reads the .env file from S3.
       DOC
@@ -65,6 +72,10 @@ variables:
         pairs = fetch(:env_hash)
 
         ARGV.shift
+
+        if using_capistrano_multistage?
+          ARGV.shift
+        end
 
         ARGV.map do |pair|
           key, value = pair.split('=', 2)
@@ -93,6 +104,10 @@ variables:
       DOC
       task :unset do
         pairs = fetch(:env_hash)
+
+        if using_capistrano_multistage?
+          ARGV.shift
+        end
 
         ARGV.shift
         ARGV.each { |key| pairs.delete(key) }
