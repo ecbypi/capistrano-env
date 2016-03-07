@@ -93,7 +93,7 @@ variables:
         content = pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
 
         object.write content
-        put content, "#{latest_release}/.env", via: :scp
+        put content, "#{latest_release}/.env", :via => :scp
       end
 
       desc <<-DOC
