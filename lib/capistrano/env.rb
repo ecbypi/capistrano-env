@@ -87,7 +87,7 @@ variables:
         scp.
       DOC
       task :export do
-        pairs = fetch(:env_hash)
+        pairs = fetch(:env_hash).sort
         object = fetch(:env_object)
 
         content = pairs.map { |key, value| "#{key}=#{value}" }.join("\n") << "\n"
